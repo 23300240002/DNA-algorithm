@@ -5,7 +5,7 @@
 #include <algorithm>
 using namespace std;
 
-// è®¡ç®—å­—ç¬¦ä¸²çš„äº’è¡¥ç¿»è½¬åºåˆ—
+// ¼ÆËã×Ö·û´®µÄ»¥²¹·­×ªĞòÁĞ
 string get_reverse_complement(const string& s) {
     string res = s;
     reverse(res.begin(), res.end());
@@ -28,36 +28,37 @@ int main() {
     int n = query.length();
     int m = reference.length();
 
-    // é¢„å¤„ç† reference çš„æ‰€æœ‰å­ä¸²åŠå…¶äº’è¡¥ç¿»è½¬åºåˆ—
-    unordered_map<string, pair<int, bool>> substring_map; // å­ä¸² -> {èµ·å§‹ä½ç½®, æ˜¯å¦ç¿»è½¬}
+    // Ô¤´¦Àí reference µÄËùÓĞ×Ó´®¼°Æä»¥²¹·­×ªĞòÁĞ
+    unordered_map<string, pair<int, bool>> substring_map; // ×Ó´® -> {ÆğÊ¼Î»ÖÃ, ÊÇ·ñ·­×ª}
     for (int i = 0; i < m; i++) {
         string sub = "";
         for (int j = i; j < m; j++) {
             sub += reference[j];
-            substring_map[sub] = {i, false}; // æ ‡è®°ä¸ºéäº’è¡¥ç¿»è½¬
+            substring_map[sub] = {i, false}; // ±ê¼ÇÎª·Ç»¥²¹·­×ª
         }
     }
     
-    // ç”Ÿæˆ reference çš„äº’è¡¥ç¿»è½¬ç‰ˆæœ¬
+    // Éú³É reference µÄ»¥²¹·­×ª°æ±¾
     string reference_rc = get_reverse_complement(reference);
     
-    // éå† reference_rc çš„æ‰€æœ‰å­ä¸²
+    // ±éÀú reference_rc µÄËùÓĞ×Ó´®
     for (int i = 0; i < m; i++) {
         string sub = "";
         for (int j = i; j < m; j++) {
             sub += reference_rc[j];
             int len = j - i + 1;
-            int original_start = m - len - i; // è½¬æ¢ä¸º reference ä¸­çš„èµ·å§‹ä¸‹æ ‡
+            int original_start = m - len - i; // ×ª»»Îª reference ÖĞµÄÆğÊ¼ÏÂ±ê
             if (substring_map.find(sub) == substring_map.end()) {
-                substring_map[sub] = {original_start, true}; // æ ‡è®°ä¸ºäº’è¡¥ç¿»è½¬
+                substring_map[sub] = {original_start, true}; // ±ê¼ÇÎª»¥²¹·­×ª
             }
         }
     }
 
-    // åŠ¨æ€è§„åˆ’
-    vector<int> dp(n + 1, n + 1); // åˆå§‹åŒ–ä¸ºæœ€å¤§å€¼
-    dp[n] = 0; // ç©ºä¸²ä¸º 0
-    vector<pair<int, pair<int, bool>>> trace(n + 1, {-1, {-1, false}}); // è®°å½•è½¬ç§»
+    // ¶¯Ì¬¹æ»®·Ö¸î query
+    vector<int> dp(n + 1, n + 1); // ³õÊ¼»¯Îª×î´óÖµ
+    dp[n] = 0; // ¿Õ´®Îª 0
+    // trace[i] ¼ÇÂ¼´ÓÎ»ÖÃ i ¾­¹ıÆ¥Åäºóµ½ÏÂÒ»¸öÎ»ÖÃµÄĞÅÏ¢£º{next_pos, {start_pos, is_inversion}}
+    vector<pair<int, pair<int, bool>>> trace(n + 1, {-1, {-1, false}});
 
     for (int i = n - 1; i >= 0; i--) {
         string sub = "";
@@ -75,21 +76,56 @@ int main() {
         }
     }
 
-    // è¾“å‡ºç»“æœ
-    vector<pair<pair<int, int>, bool>> result;
+    // ¸ù¾İ trace Éú³ÉÃ¿¸ö·Ö¶ÎµÄ½á¹ûĞÅÏ¢£¬´æ´¢Îª {start_pos, length, is_inversion}
+    // ÆäÖĞ length ÎªÃ¿¸ö·Ö¶Î£¨ÖØ¸´µ¥Î»£©µÄ³¤¶È
+    vector<pair<pair<int,int>, bool>> segments;
     int pos = 0;
     while (pos < n) {
         int next = trace[pos].first;
         int start = trace[pos].second.first;
         bool is_rc = trace[pos].second.second;
-        int len = next - pos;
-        result.push_back({{start, start + len - 1}, is_rc});
+        int len = next - pos;  // ÖØ¸´µ¥Î»µÄ³¤¶È
+        segments.push_back({{start, start + len - 1}, is_rc});
         pos = next;
     }
 
-    for (auto& res : result) {
-        cout << "[" << res.first.first << "," << res.first.second << "] "
-             << (res.second ? "yes" : "no") << endl;
+    // ¶ÔÁ¬Ğø³öÏÖÏàÍ¬½á¹ûµÄ segments ½øĞĞ·Ö×éºÏ²¢
+    // ÅĞ¶ÏÌõ¼şÎª£ºÆğÊ¼Î»ÖÃºÍ·­×ª±êÖ¾ÏàÍ¬¡£ÖØ¸´´ÎÊı¼´ÎªÁ¬ĞøÏàÍ¬·Ö¶ÎµÄ¸öÊı£¬
+    // ¶øÃ¿¸ö·Ö¶ÎµÄ length ÊÇµ¥Î»³¤¶È
+    struct Output {
+        int start_pos;
+        int length;
+        int repeat_count;
+        bool is_inversion;
+    };
+    vector<Output> outputs;
+    for (size_t i = 0; i < segments.size();) {
+        int current_start = segments[i].first.first;
+        // µ¥Î»³¤¶È¼ÆËãÎª£¨Çø¼äÓÒ¶Ëµã - ÆğÊ¼ + 1£©
+        int unit_length = segments[i].first.second - segments[i].first.first + 1;
+        bool current_rc = segments[i].second;
+        int count = 1;
+        size_t j = i + 1;
+        while (j < segments.size() && segments[j].first.first == current_start && segments[j].second == current_rc) {
+            count++;
+            j++;
+        }
+        outputs.push_back({current_start, unit_length, count, current_rc});
+        i = j;
+    }
+
+    cout << "Notice:" << endl;
+    cout << "1. ±¾Êä³ö¸ñÊ½ÖĞ£¬´ÓÇ°ÍùºóµÄË³Ğò¿¼²ìqueryĞòÁĞÖĞµÄÃ¿Ò»¶Î·Ö±ğÀ´×ÔÓÚreferenceµÄºÎÎ»ÖÃ£¬¸´ÖÆ¶àÉÙ´Î£¬ÊÇ·ñ·­×ªµÈĞÅÏ¢¡£"
+    cout << "2. Ã¿Ìõ¼ÇÂ¼ÖĞ£¬start_pos ±íÊ¾ query µÄ¸Ã¶ÎĞòÁĞÔÚ reference ÀïµÄÆğÊ¼Î»ÖÃ£¨0 ÎªÆğÊ¼Ë÷ÒıÎ»ÖÃ£©£¬length ÎªÖØ¸´µ¥Î»³¤¶È£¬repeat_count ÎªÖØ¸´´ÎÊı£¨ÖÁÉÙ 1 ´Î£¬¼´Æä±¾Éí£©£¬is_inversion ±íÊ¾¸Ã¶ÎĞòÁĞÊÇ·ñ·­×ª¡£" << endl;
+    
+    // Êä³ö½á¹û£¬¸ñÊ½Îª£º
+    // {'start_pos': X, 'length': Y, 'repeat_count': Z, 'is_inversion': True/False}
+    for (auto& out : outputs) {
+        cout << "{'start_pos': " << out.start_pos 
+             << ", 'length': " << out.length 
+             << ", 'repeat_count': " << out.repeat_count 
+             << ", 'is_inversion': " << (out.is_inversion ? "True" : "False") 
+             << "}" << endl;
     }
 
     return 0;
