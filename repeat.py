@@ -76,8 +76,7 @@ def main():
                 if dp[i] > 1 + dp[j + 1]:
                     dp[i] = 1 + dp[j + 1] # 更新切分总数，使之更少
                     cutting[i] = (j + 1, substr_dict[sub]) # 更新切分路径信息
-                    # 这里的j + 1是指下一个切分的位置，substr_dict[sub]则指从当前位置 i 开始，
-                    # 找到的最佳后继子串 sub 在参考序列中的信息
+                    # 这里的j + 1是指下一个切分的位置，substr_dict[sub]则指从当前位置 i 开始，找到的最佳后继子串 sub 在参考序列中的信息
     
     # 如果没有找到匹配的切分方案，则输出错误信息并退出
     if cutting[0] is None: # 如果从 0 开始的切分元组为空
